@@ -38,7 +38,8 @@ contributes zero points.
 Component logic:
 
 - A hike clears active positive points and adds one negative point.
-- Negative points expire after six months.
+- Consecutive hikes stack additional negative points.
+- Each negative point expires independently after six months.
 - An initial cut clears active negative points and adds two positive points.
 - Initial-cut points decay after six and twelve months.
 - Further consecutive cuts add one positive point that expires after six months.
@@ -107,15 +108,20 @@ monetary model points + four percent model points
 It ranges from 0 to 10. It enters buy mode at 6 or higher and stays there until
 the model falls to 3 or lower.
 
-The exposure mapping used for reporting is:
+The default backtest exposure follows the book's tested rule:
+
+- buy mode: 100% stocks
+- sell mode: 100% cash equivalent
+
+The implementation also emits `book_partial_exposure`, matching the book's
+example of a more gradual risk profile:
 
 | Super points | Exposure |
 | ---: | ---: |
 | 0-2 | 0% |
-| 3-4 | 50% |
-| 5 | 65% |
-| 6-7 | 80% |
-| 8-10 | 100% |
+| 3-4 | 33.3% |
+| 5-6 | 66.7% |
+| 7-10 | 100% |
 
 ## Public References
 

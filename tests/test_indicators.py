@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from zweig_supermodel.indicators import (
+    book_partial_exposure_for_super_points,
     fed_indicator,
     four_percent_model,
     installment_debt_indicator,
@@ -56,6 +57,16 @@ def test_fed_hikes_expire_after_six_months(monthly_series) -> None:
     assert result.iloc[-1]["points"] == 2
 
 
+def test_fed_consecutive_hikes_stack_and_expire_independently(monthly_series) -> None:
+    rates = monthly_series([5.0, 5.25, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5, 5.5])
+    result = fed_indicator(rates)
+
+    assert result.iloc[1]["indicator_points"] == -1
+    assert result.iloc[2]["indicator_points"] == -2
+    assert result.iloc[7]["indicator_points"] == -1
+    assert result.iloc[8]["indicator_points"] == 0
+
+
 def test_installment_debt_lagged_buy_signal() -> None:
     index = pd.date_range("2020-01-31", periods=15, freq="ME")
     values = [
@@ -107,4 +118,13 @@ def test_monetary_and_super_model_hysteresis(monthly_series, weekly_series) -> N
     super_result = super_model(monetary, four)
 
     assert "exposure" in super_result
+    assert "book_partial_exposure" in super_result
     assert super_result["points"].max() <= 10
+    assert set(super_result["exposure"]).issubset({0.0, 1.0})
+
+
+def test_book_partial_super_model_exposure_mapping() -> None:
+    assert book_partial_exposure_for_super_points(2) == 0.0
+    assert book_partial_exposure_for_super_points(4) == 1.0 / 3.0
+    assert book_partial_exposure_for_super_points(6) == 2.0 / 3.0
+    assert book_partial_exposure_for_super_points(7) == 1.0

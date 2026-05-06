@@ -23,7 +23,7 @@ class FedEvent:
 
 
 def _event_is_active(event: FedEvent, date: pd.Timestamp) -> bool:
-    return date <= event.expires
+    return date < event.expires
 
 
 def _empty_indicator(index: pd.DatetimeIndex, column: str) -> pd.DataFrame:
@@ -117,7 +117,8 @@ def _fed_component_indicator(
         action = ""
 
         if direction > 0:
-            events = [FedEvent(-1, date + pd.DateOffset(months=stale_months))]
+            events = [event for event in events if event.points < 0]
+            events.append(FedEvent(-1, date + pd.DateOffset(months=stale_months)))
             last_change_date = date
             last_direction = direction
             action = "hike"
@@ -370,15 +371,13 @@ def monetary_model(
     return frame
 
 
-def exposure_for_super_points(points: int) -> float:
+def book_partial_exposure_for_super_points(points: int) -> float:
     if points <= 2:
         return 0.0
     if points <= 4:
-        return 0.5
-    if points == 5:
-        return 0.65
-    if points <= 7:
-        return 0.8
+        return 1.0 / 3.0
+    if points <= 6:
+        return 2.0 / 3.0
     return 1.0
 
 
@@ -419,6 +418,9 @@ def super_model(
 
     frame["state"] = states
     frame["signal"] = signals
-    frame["exposure"] = frame["points"].map(lambda value: exposure_for_super_points(int(value)))
+    frame["exposure"] = frame["state"].map(lambda value: 1.0 if value == "buy" else 0.0)
+    frame["book_partial_exposure"] = frame["points"].map(
+        lambda value: book_partial_exposure_for_super_points(int(value))
+    )
     frame.index.name = "date"
     return frame
