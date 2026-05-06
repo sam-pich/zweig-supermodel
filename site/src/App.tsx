@@ -2,7 +2,7 @@ import { Activity, BarChart3, CalendarClock, Gauge, ShieldAlert, TrendingUp } fr
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { ExposureStrip, LineChart, ScoreChart } from "./charts";
-import type { DashboardPayload, DashboardRun, Stats } from "./data";
+import type { DashboardPayload, DashboardRun, ModelSettings, SettingValue, Stats } from "./data";
 import { loadDashboard } from "./data";
 
 function formatPercent(value: number, digits = 1): string {
@@ -18,7 +18,7 @@ function formatMoney(value: number): string {
 }
 
 function labelRun(run: DashboardRun): string {
-  return `${run.target.toUpperCase()} / ${run.model.replace("super_", "Super ")}`;
+  return `${run.scenarioName} - ${run.target.toUpperCase()} / ${run.model.replace("super_", "Super ")}`;
 }
 
 function deltaClass(strategy: number, benchmark: number): "positive" | "negative" {
@@ -174,6 +174,56 @@ function ComponentSnapshot({ run }: { run: DashboardRun }) {
   );
 }
 
+function settingLabel(group: string, key: string): string {
+  const groupLabel = group.replaceAll("_", " ");
+  const keyLabel = key.replaceAll("_", " ");
+  return `${groupLabel} ${keyLabel}`;
+}
+
+function settingValue(group: string, key: string, value: SettingValue): string {
+  if (typeof value === "number") {
+    if (group === "four_percent" && key === "threshold") {
+      return formatPercent(value);
+    }
+    return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+  }
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+  return value ?? "-";
+}
+
+function flattenedSettings(settings: ModelSettings): Array<{
+  group: string;
+  key: string;
+  value: SettingValue;
+}> {
+  return Object.entries(settings).flatMap(([group, values]) =>
+    Object.entries(values).map(([key, value]) => ({ group, key, value })),
+  );
+}
+
+function ScenarioSettings({ run }: { run: DashboardRun }) {
+  const rows = flattenedSettings(run.settings);
+
+  return (
+    <section className="panel">
+      <div className="panel-head">
+        <h2>Scenario Settings</h2>
+      </div>
+      <p className="scenario-description">{run.scenarioDescription}</p>
+      <div className="settings-grid">
+        {rows.map((row) => (
+          <div key={`${row.group}-${row.key}`}>
+            <span>{settingLabel(row.group, row.key)}</span>
+            <strong>{settingValue(row.group, row.key, row.value)}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Notes({ data }: { data: DashboardPayload }) {
   return (
     <section className="panel">
@@ -258,7 +308,7 @@ export function App() {
           <h1>Zweig Super Model</h1>
         </div>
         <label className="run-select">
-          <span>Run</span>
+          <span>Scenario / Run</span>
           <select value={run.id} onChange={(event) => setSelectedRunId(event.target.value)}>
             {data.runs.map((item) => (
               <option key={item.id} value={item.id}>
@@ -275,6 +325,7 @@ export function App() {
         <LineChart title="Equity Curve" lines={equityLines} dates={monthlyDates} />
         <div className="side-stack">
           <ComponentSnapshot run={run} />
+          <ScenarioSettings run={run} />
           <Notes data={data} />
         </div>
       </section>

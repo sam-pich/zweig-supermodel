@@ -63,9 +63,26 @@ npm install
 npm run dev
 ```
 
+To generate the dashboard with comparison scenarios:
+
+```bash
+uv run zweig \
+  --config configs/default.toml \
+  --compare-config configs/aggressive.toml \
+  --compare-config configs/conservative.toml \
+  --output artifacts/latest
+```
+
 For a production build:
 
 ```bash
 cd site
 npm run build
 ```
+
+## Threshold Scenarios
+
+Model thresholds live under `[models.*]` in each config file. The default config
+uses the book-rule thresholds. `configs/aggressive.toml` and
+`configs/conservative.toml` are comparison variants for research and dashboard
+review.

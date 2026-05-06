@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -111,10 +112,32 @@ def build_signal_tables(
 
     start = config.backtest.start
     end = config.backtest.end
-    prime = prime_rate_indicator(_clip_series(prime_series, start, end))
-    fed = fed_indicator(_clip_series(discount_series, start, end))
-    installment = installment_debt_indicator(_clip_series(installment_series, start, end))
-    monetary = monetary_model(prime, fed, installment)
+    rules = config.models
+    prime = prime_rate_indicator(
+        _clip_series(prime_series, start, end),
+        threshold=rules.prime_rate.threshold,
+        large_move=rules.prime_rate.large_move,
+        initial_state=rules.prime_rate.initial_state,
+    )
+    fed = fed_indicator(
+        _clip_series(discount_series, start, end),
+        stale_months=rules.fed.stale_months,
+        long_quiet_months=rules.fed.long_quiet_months,
+    )
+    installment = installment_debt_indicator(
+        _clip_series(installment_series, start, end),
+        threshold=rules.installment_debt.threshold,
+        signal_lag_months=rules.installment_debt.signal_lag_months,
+        initial_state=rules.installment_debt.initial_state,
+    )
+    monetary = monetary_model(
+        prime,
+        fed,
+        installment,
+        buy_threshold=rules.monetary.buy_threshold,
+        sell_threshold=rules.monetary.sell_threshold,
+        initial_state=rules.monetary.initial_state,
+    )
 
     tables = {
         "prime": prime,
@@ -134,9 +157,19 @@ def build_signal_tables(
         )
         if close is None:
             continue
-        four = four_percent_model(_clip_series(close, start, end))
+        four = four_percent_model(
+            _clip_series(close, start, end),
+            threshold=rules.four_percent.threshold,
+            initial_state=rules.four_percent.initial_state,
+        )
         tables[f"four_percent_{name}"] = four
-        tables[f"super_{name}"] = super_model(monetary, four)
+        tables[f"super_{name}"] = super_model(
+            monetary,
+            four,
+            buy_threshold=rules.super_model.buy_threshold,
+            sell_threshold=rules.super_model.sell_threshold,
+            initial_state=rules.super_model.initial_state,
+        )
 
     if "sp500" in config.market:
         sp500 = _load_market_series(
@@ -147,9 +180,19 @@ def build_signal_tables(
             refresh=refresh,
         )
         if sp500 is not None:
-            four_sp500 = four_percent_model(_clip_series(sp500, start, end))
+            four_sp500 = four_percent_model(
+                _clip_series(sp500, start, end),
+                threshold=rules.four_percent.threshold,
+                initial_state=rules.four_percent.initial_state,
+            )
             tables["four_percent_sp500"] = four_sp500
-            tables["super_sp500"] = super_model(monetary, four_sp500)
+            tables["super_sp500"] = super_model(
+                monetary,
+                four_sp500,
+                buy_threshold=rules.super_model.buy_threshold,
+                sell_threshold=rules.super_model.sell_threshold,
+                initial_state=rules.super_model.initial_state,
+            )
 
     return tables
 
@@ -195,6 +238,10 @@ def write_outputs(
     backtests: dict[str, BacktestResult],
     *,
     dashboard_path: str | Path | None = None,
+    scenario_id: str = "book",
+    scenario_name: str = "Book Rules",
+    scenario_description: str = "Book-derived thresholds and binary Super Model exposure.",
+    settings: dict[str, Any] | None = None,
 ) -> None:
     output = Path(output_dir)
     tables_dir = output / "tables"
@@ -217,6 +264,22 @@ def write_outputs(
         }
 
     (output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    write_dashboard_json(output / "dashboard.json", signal_tables, backtests)
+    write_dashboard_json(
+        output / "dashboard.json",
+        signal_tables,
+        backtests,
+        scenario_id=scenario_id,
+        scenario_name=scenario_name,
+        scenario_description=scenario_description,
+        settings=settings,
+    )
     if dashboard_path is not None:
-        write_dashboard_json(dashboard_path, signal_tables, backtests)
+        write_dashboard_json(
+            dashboard_path,
+            signal_tables,
+            backtests,
+            scenario_id=scenario_id,
+            scenario_name=scenario_name,
+            scenario_description=scenario_description,
+            settings=settings,
+        )

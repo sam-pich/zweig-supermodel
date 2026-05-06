@@ -3,7 +3,8 @@
 This repo implements the simplified model structure described in Martin Zweig's
 *Winning on Wall Street* and later public summaries. The implementation keeps
 the raw indicator scores separate from the combined model so each signal can be
-audited.
+audited. Threshold defaults follow the book-rule configuration and can be edited
+in `configs/*.toml`; see `docs/thresholds.md`.
 
 ## Prime Rate Indicator
 

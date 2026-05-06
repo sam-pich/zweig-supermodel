@@ -1,7 +1,7 @@
 [metadata]
-id = "book"
-name = "Book Rules"
-description = "Book-derived thresholds and binary Super Model exposure."
+id = "conservative"
+name = "Conservative"
+description = "Later entries and faster risk reduction for comparison research."
 
 [fred]
 cache_dir = "data/cache/fred"
@@ -38,7 +38,7 @@ end = ""
 
 [models.prime_rate]
 threshold = 8.0
-large_move = 1.0
+large_move = 1.25
 initial_state = "sell"
 
 [models.fed]
@@ -46,20 +46,20 @@ stale_months = 6
 long_quiet_months = 24
 
 [models.installment_debt]
-threshold = 9.0
+threshold = 8.0
 signal_lag_months = 2
 initial_state = "sell"
 
 [models.four_percent]
-threshold = 0.04
+threshold = 0.05
 initial_state = "sell"
 
 [models.monetary]
 buy_threshold = 6
-sell_threshold = 2
+sell_threshold = 3
 initial_state = "sell"
 
 [models.super]
-buy_threshold = 6
-sell_threshold = 3
+buy_threshold = 7
+sell_threshold = 4
 initial_state = "sell"

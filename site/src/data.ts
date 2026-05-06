@@ -40,8 +40,16 @@ export type ScorePoint = {
   book_partial_exposure?: number;
 };
 
+export type SettingValue = string | number | boolean | null;
+
+export type ModelSettings = Record<string, Record<string, SettingValue>>;
+
 export type DashboardRun = {
   id: string;
+  scenarioId: string;
+  scenarioName: string;
+  scenarioDescription: string;
+  settings: ModelSettings;
   target: string;
   model: string;
   strategy: Stats;
@@ -52,10 +60,18 @@ export type DashboardRun = {
   signals: ScorePoint[];
 };
 
+export type DashboardScenario = {
+  id: string;
+  name: string;
+  description: string;
+  settings: ModelSettings;
+};
+
 export type DashboardPayload = {
   generatedAt: string;
   title: string;
   notes: string[];
+  scenarios: DashboardScenario[];
   runs: DashboardRun[];
   components: Record<string, Array<Record<string, string | number | boolean | null>>>;
 };
