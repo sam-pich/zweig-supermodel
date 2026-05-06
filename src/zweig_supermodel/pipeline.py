@@ -7,6 +7,7 @@ import pandas as pd
 
 from zweig_supermodel.backtest import BacktestResult, run_exposure_backtest
 from zweig_supermodel.config import MarketSeriesConfig, ProjectConfig
+from zweig_supermodel.dashboard import write_dashboard_json
 from zweig_supermodel.data import (
     fetch_fred_series,
     fetch_fred_series_many,
@@ -192,6 +193,8 @@ def write_outputs(
     output_dir: str | Path,
     signal_tables: dict[str, pd.DataFrame],
     backtests: dict[str, BacktestResult],
+    *,
+    dashboard_path: str | Path | None = None,
 ) -> None:
     output = Path(output_dir)
     tables_dir = output / "tables"
@@ -214,3 +217,6 @@ def write_outputs(
         }
 
     (output / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    write_dashboard_json(output / "dashboard.json", signal_tables, backtests)
+    if dashboard_path is not None:
+        write_dashboard_json(dashboard_path, signal_tables, backtests)

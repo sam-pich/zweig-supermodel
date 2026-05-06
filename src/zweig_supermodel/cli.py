@@ -20,13 +20,17 @@ def run(
         "configs/default.toml"
     ),
     output: Annotated[Path, typer.Option(help="Output directory.")] = Path("artifacts/latest"),
+    site_data: Annotated[
+        Path | None,
+        typer.Option(help="Optional dashboard JSON path for the static site."),
+    ] = Path("site/public/data/dashboard.json"),
     refresh: Annotated[bool, typer.Option(help="Refresh cached external data.")] = False,
 ) -> None:
     """Fetch data, build signal tables, run backtests, and write site-ready outputs."""
     project = load_project_config(config)
     signal_tables = build_signal_tables(project, refresh=refresh)
     backtests = run_backtests(project, signal_tables, refresh=refresh)
-    write_outputs(output, signal_tables, backtests)
+    write_outputs(output, signal_tables, backtests, dashboard_path=site_data)
 
     table = Table(title="Backtest Summary")
     table.add_column("Run")

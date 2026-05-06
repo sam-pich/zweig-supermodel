@@ -11,4 +11,7 @@ build/
 *.egg-info/
 data/cache/
 artifacts/
+site/public/data/*.json
+site/node_modules/
+site/dist/
 *.log
