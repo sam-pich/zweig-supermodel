@@ -248,6 +248,7 @@ export function App() {
       values: run.monthly.map((point) => point.benchmark_drawdown),
     },
   ];
+  const monthlyDates = run.monthly.map((point) => point.date);
 
   return (
     <main>
@@ -271,7 +272,7 @@ export function App() {
       <SummaryGrid run={run} />
 
       <section className="main-grid">
-        <LineChart title="Equity Curve" lines={equityLines} />
+        <LineChart title="Equity Curve" lines={equityLines} dates={monthlyDates} />
         <div className="side-stack">
           <ComponentSnapshot run={run} />
           <Notes data={data} />
@@ -280,7 +281,7 @@ export function App() {
 
       <section className="main-grid lower">
         <div className="wide-stack">
-          <LineChart title="Drawdown" lines={drawdownLines} height={190} percent />
+          <LineChart title="Drawdown" lines={drawdownLines} dates={monthlyDates} height={190} percent />
           <ScoreChart points={run.scoreTimeline} />
           <ExposureStrip points={run.monthly} />
         </div>
