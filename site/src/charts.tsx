@@ -228,22 +228,68 @@ export function ScoreChart({ points }: { points: ScorePoint[] }) {
 }
 
 export function ExposureStrip({ points }: { points: MonthlyPoint[] }) {
+  const width = 900;
+  const height = 54;
+  const dates = points.map((point) => point.date);
+  const xTicks = tickIndexes(dates.length);
+  const barWidth = points.length ? width / points.length : width;
+
   return (
     <section className="panel">
       <div className="panel-head">
         <h2>Exposure</h2>
+        <div className="legend">
+          <span>
+            <i style={{ background: "#1f7a8c" }} />
+            Stocks
+          </span>
+          <span>
+            <i style={{ background: "#d9dee2" }} />
+            Cash
+          </span>
+        </div>
       </div>
-      <div className="exposure-strip" aria-label="Monthly exposure strip">
-        {points.map((point) => (
-          <span
-            key={point.date}
-            title={`${point.date}: ${(point.applied_exposure * 100).toFixed(0)}%`}
-            style={{
-              opacity: 0.18 + point.applied_exposure * 0.82,
-              background: point.applied_exposure > 0 ? "#1f7a8c" : "#d9dee2",
-            }}
-          />
-        ))}
+      <div className="exposure-chart">
+        <div className="exposure-labels">
+          <span>100% stocks</span>
+          <span>0% stocks</span>
+        </div>
+        <div className="plot-area">
+          <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Monthly stock exposure">
+            <rect x="0" y="0" width={width} height={height} fill="#f9fbfb" />
+            <g className="grid">
+              {xTicks.map((index) => {
+                const x = dates.length === 1 ? 0 : (index / (dates.length - 1)) * width;
+                return <line key={dates[index]} x1={x} x2={x} y1="0" y2={height} />;
+              })}
+            </g>
+            {points.map((point, index) => {
+              const invested = point.applied_exposure > 0;
+              return (
+                <rect
+                  key={point.date}
+                  x={index * barWidth}
+                  y="0"
+                  width={Math.max(barWidth, 0.6)}
+                  height={height}
+                  fill={invested ? "#1f7a8c" : "#d9dee2"}
+                >
+                  <title>{`${point.date}: ${(point.applied_exposure * 100).toFixed(0)}% stocks`}</title>
+                </rect>
+              );
+            })}
+          </svg>
+          <div className="x-axis" aria-label="Exposure time axis">
+            {xTicks.map((index) => (
+              <span
+                key={dates[index]}
+                style={{ left: `${dates.length === 1 ? 0 : (index / (dates.length - 1)) * 100}%` }}
+              >
+                {tickLabel(dates[index])}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -322,19 +322,31 @@ h2 {
   font-size: 0.82rem;
 }
 
-.exposure-strip {
+.exposure-chart {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(2px, 1fr));
-  gap: 1px;
-  height: 42px;
-  overflow: hidden;
-  border-radius: 6px;
-  background: #eef2f3;
+  grid-template-columns: 82px 1fr;
+  gap: 10px;
+  align-items: start;
 }
 
-.exposure-strip span {
+.exposure-chart svg {
   display: block;
-  min-width: 2px;
+  width: 100%;
+  height: auto;
+  border: 1px solid #e1e7ea;
+  border-radius: 6px;
+  background: #f9fbfb;
+}
+
+.exposure-labels {
+  display: flex;
+  height: 54px;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #69777e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: right;
 }
 
 .table-wrap {
@@ -445,5 +457,13 @@ th {
 
   .chart-frame {
     grid-template-columns: 42px 1fr;
+  }
+
+  .exposure-chart {
+    grid-template-columns: 1fr;
+  }
+
+  .exposure-labels {
+    display: none;
   }
 }
