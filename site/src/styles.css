@@ -155,6 +155,7 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.8fr);
   gap: 12px;
+  align-items: start;
   margin-bottom: 12px;
 }
 
