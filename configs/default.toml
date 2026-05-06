@@ -1,0 +1,32 @@
+[fred]
+cache_dir = "data/cache/fred"
+prime_series = "MPRIME"
+discount_series = ["INTDSRUSM193N", "DPCREDIT"]
+installment_debt_series = "NONREVNS"
+
+[market.sp500]
+source = "url_csv"
+url = "https://raw.githubusercontent.com/datasets/s-and-p-500/main/data/data.csv"
+date_col = "Date"
+value_col = "SP500"
+label = "S&P 500 Index"
+
+[market.rsp]
+source = "nasdaq"
+symbol = "RSP"
+asset_class = "etf"
+label = "RSP Equal-Weight Proxy"
+
+[momentum.value_line]
+source = "csv"
+path = "data/value_line.csv"
+date_col = "date"
+value_col = "close"
+label = "Value Line Composite"
+required = false
+
+[backtest]
+initial_capital = 10000
+cadence = "monthly"
+start = "1950-01-01"
+end = ""

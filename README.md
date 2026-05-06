@@ -1,0 +1,52 @@
+# Zweig Super Model
+
+Research and backtesting code for Martin Zweig's market timing framework from
+*Winning on Wall Street*.
+
+The first version focuses on reproducible signal construction:
+
+- Prime Rate Indicator
+- Fed Indicator
+- Installment Debt Indicator
+- Monetary Model
+- Four Percent Model
+- Combined Super Model
+
+The code is designed to emit site-ready CSV and JSON outputs for a later web UI.
+
+## Status
+
+This is an initial research implementation. The rule engine follows the published
+structure of Zweig's models, but exact book-derived edge cases should be validated
+against user-provided excerpts before treating results as final.
+
+## Quick Start
+
+```bash
+uv sync --extra dev
+uv run python -m pytest
+uv run zweig --config configs/default.toml --output artifacts/latest
+```
+
+The default run fetches public data where possible and writes:
+
+- indicator tables
+- combined model tables
+- backtest equity curves
+- performance summary JSON
+
+## Data
+
+FRED is used for macro series. Stooq is the default no-key market data adapter
+for the S&P 500 index and RSP ETF proxy. A CSV adapter is included for licensed
+or manually supplied series, especially Value Line data for the Four Percent
+Model.
+
+See [docs/data-sources.md](docs/data-sources.md) for details.
+
+## Model Notes
+
+See [docs/model-rules.md](docs/model-rules.md) and
+[docs/assumptions.md](docs/assumptions.md). The key v1 design choice is that
+each model emits auditable point scores and signal states before any backtest is
+run.
